@@ -1,9 +1,11 @@
 {
   "name": "performance-testing-challenge",
+  "type": "module",
   "private": true,
   "scripts": {
-    "smoke": "mkdir -p reports && docker run --rm -i --user \"$(id -u):$(id -g)\" --add-host=host.docker.internal:host-gateway -v \"$PWD:/work\" -w /work -e BASE_URL -e API_PATH -e METHOD -e AUTH_TOKEN -e REQUEST_BODY -e EXPECTED_STATUS -e SLEEP_SECONDS -e TIMEOUT -e TEST_TYPE=smoke -e K6_WEB_DASHBOARD=true -e K6_WEB_DASHBOARD_PERIOD=1s -e K6_WEB_DASHBOARD_EXPORT=/work/reports/smoke-report.html grafana/k6:latest run --summary-export=/work/reports/smoke-summary.json /work/scripts/api-performance.js",
-    "load": "mkdir -p reports && docker run --rm -i --user \"$(id -u):$(id -g)\" --add-host=host.docker.internal:host-gateway -v \"$PWD:/work\" -w /work -e BASE_URL -e API_PATH -e METHOD -e AUTH_TOKEN -e REQUEST_BODY -e EXPECTED_STATUS -e SLEEP_SECONDS -e TIMEOUT -e TEST_TYPE=load -e K6_WEB_DASHBOARD=true -e K6_WEB_DASHBOARD_PERIOD=1s -e K6_WEB_DASHBOARD_EXPORT=/work/reports/load-report.html grafana/k6:latest run --summary-export=/work/reports/load-summary.json /work/scripts/api-performance.js",
-    "clean:reports": "rm -rf reports"
+    "smoke": "node ./scripts/run-k6.mjs smoke",
+    "load": "node ./scripts/run-k6.mjs load",
+    "clean:reports": "node ./scripts/run-k6.mjs clean",
+    "test": "node --test"
   }
 }

@@ -19,6 +19,9 @@ Arquetipo base de **k6** para ejecutar pruebas de rendimiento sobre APIs y gener
 ├── package.json
 ├── scripts/
 │   └── api-performance.js
+│   └── config.js
+│   └── run-k6.mjs
+│   └── config.test.js
 └── README.md
 ```
 
@@ -30,6 +33,8 @@ Arquetipo base de **k6** para ejecutar pruebas de rendimiento sobre APIs y gener
 > Los scripts usan la imagen oficial `grafana/k6`, por lo que no necesitas instalar k6 localmente.
 >
 > Además agregan `host.docker.internal` para que también puedas apuntar a APIs que estén corriendo en tu máquina.
+>
+> Los comandos `npm` llaman a un wrapper en Node.js, así que no dependen de sintaxis específica de Bash.
 
 ## Configuración
 
@@ -44,6 +49,8 @@ Puedes sobrescribir estos valores al ejecutar la prueba:
 - `SLEEP_SECONDS`: pausa entre iteraciones.
 - `TIMEOUT`: timeout por request.
 
+El path del endpoint se normaliza automáticamente, por lo que `/health`, `health` y `/health/` se ejecutan contra la misma URL final.
+
 Valores por defecto:
 
 - `BASE_URL=https://test-api.k6.io`
@@ -54,6 +61,12 @@ Valores por defecto:
 - `TIMEOUT=30s`
 
 ## Ejecución
+
+### Validar la configuración auxiliar
+
+```bash
+npm test
+```
 
 ### Smoke test
 
