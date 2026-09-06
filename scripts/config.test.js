@@ -86,3 +86,21 @@ test('maps environment variables into executable k6 configuration', () => {
   assert.equal(emptyPostConfig.payload, null);
   assert.deepEqual(emptyPostConfig.headers, {});
 });
+
+test('rejects invalid numeric environment values with a clear error', () => {
+  assert.throws(
+    () =>
+      getExecutionConfig({
+        EXPECTED_STATUS: 'abc'
+      }),
+    /EXPECTED_STATUS must be a valid number/
+  );
+
+  assert.throws(
+    () =>
+      getExecutionConfig({
+        SLEEP_SECONDS: 'fast'
+      }),
+    /SLEEP_SECONDS must be a valid number/
+  );
+});

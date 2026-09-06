@@ -74,6 +74,20 @@ export function buildHeaders({ authToken, payload }) {
   return headers;
 }
 
+function parseNumericEnv(name, value, defaultValue) {
+  if (value === undefined || value === '') {
+    return defaultValue;
+  }
+
+  const parsedValue = Number(value);
+
+  if (!Number.isFinite(parsedValue)) {
+    throw new Error(`${name} must be a valid number`);
+  }
+
+  return parsedValue;
+}
+
 export function getExecutionConfig(env = {}) {
   const profileName = (env.TEST_TYPE || 'load').toLowerCase();
   const profile = getProfile(profileName);
@@ -89,8 +103,8 @@ export function getExecutionConfig(env = {}) {
     url: buildUrl(env.BASE_URL, env.API_PATH),
     normalizedApiPath,
     method,
-    expectedStatus: Number(env.EXPECTED_STATUS || 200),
-    sleepSeconds: Number(env.SLEEP_SECONDS || 1),
+    expectedStatus: parseNumericEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 200),
+    sleepSeconds: parseNumericEnv('SLEEP_SECONDS', env.SLEEP_SECONDS, 1),
     timeout: env.TIMEOUT || '30s',
     payload,
     headers: buildHeaders({ authToken: env.AUTH_TOKEN, payload }),

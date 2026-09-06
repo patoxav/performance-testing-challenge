@@ -3,6 +3,7 @@ import { mkdirSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const k6Image = 'grafana/k6:2.2.0';
+const dockerCommand = process.platform === 'win32' ? 'docker.exe' : 'docker';
 const action = process.argv[2];
 const workingDirectory = process.cwd();
 const reportsDirectory = resolve(workingDirectory, 'reports');
@@ -59,7 +60,7 @@ dockerArgs.push(
   '/work/scripts/api-performance.js'
 );
 
-const result = spawnSync('docker', dockerArgs, { stdio: 'inherit' });
+const result = spawnSync(dockerCommand, dockerArgs, { stdio: 'inherit' });
 
 if (result.error) {
   console.error(`Failed to execute Docker: ${result.error.message}`);
