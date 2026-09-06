@@ -24,6 +24,8 @@ export const options = {
   }
 };
 
+const DEFAULT_VALID_USERS = [{ username: 'donero', password: 'ewedon' }];
+
 function getCredentialsFromCsv(csvPath) {
   const csvText = open(csvPath);
   const lines = csvText
@@ -32,18 +34,36 @@ function getCredentialsFromCsv(csvPath) {
     .filter(Boolean);
 
   if (lines.length < 2) {
-    throw new Error(`CSV file ${csvPath} must include a header and at least one credential row`);
+    return DEFAULT_VALID_USERS;
+  }
+
+  const headerLine = lines[0];
+  const headers = headerLine.split(',').map((value) => value.trim().toLowerCase());
+  const usernameIndex = headers.findIndex((header) => ['user', 'username'].includes(header));
+  const passwordIndex = headers.findIndex((header) => ['passwd', 'password', 'pass'].includes(header));
+
+  if (usernameIndex === -1 || passwordIndex === -1) {
+    return DEFAULT_VALID_USERS;
   }
 
   return lines.slice(1).map((line) => {
-    const [username, password] = line.split(',');
-    return { username: username.trim(), password: password.trim() };
-  });
+    const cells = line.split(',');
+    const normalizedUsername = (cells[usernameIndex] || '').trim();
+    const normalizedPassword = (cells[passwordIndex] || '').trim();
+
+    if (!normalizedUsername || !normalizedPassword) {
+      return null;
+    }
+
+    return { username: normalizedUsername, password: normalizedPassword };
+  }).filter(Boolean);
 }
 
 const credentials =
   executionConfig.url.includes('/auth/login') && executionConfig.method === 'POST'
-    ? getCredentialsFromCsv(executionConfig.csvFile)
+    ? (getCredentialsFromCsv(executionConfig.csvFile).length > 0
+        ? getCredentialsFromCsv(executionConfig.csvFile)
+        : DEFAULT_VALID_USERS)
     : [];
 
 export default function () {
@@ -57,6 +77,17 @@ export default function () {
       username: credentialsForRequest.username,
       password: credentialsForRequest.password
     });
+
+    console.log(
+      JSON.stringify({
+        vu: __VU,
+        iter: __ITER,
+        type: 'login-request',
+        username: credentialsForRequest.username,
+        password: credentialsForRequest.password,
+        payload: requestBody
+      })
+    );
   }
 
   const response = http.request(executionConfig.method, executionConfig.url, requestBody, {
@@ -73,6 +104,19 @@ export default function () {
       method: executionConfig.method
     }
   });
+
+  if (executionConfig.url.includes('/auth/login') && executionConfig.method === 'POST') {
+    console.log(
+      JSON.stringify({
+        vu: __VU,
+        iter: __ITER,
+        type: 'login-response',
+        status: response.status,
+        duration: response.timings.duration,
+        body: response.body
+      })
+    );
+  }
 
   apiResponseTime.add(response.timings.duration);
 

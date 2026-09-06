@@ -134,6 +134,17 @@ test('maps environment variables into executable k6 configuration', () => {
   });
 });
 
+test('uses the real login status code expected by the API', () => {
+  const loginConfig = getExecutionConfig({
+    TEST_TYPE: 'load',
+    BASE_URL: 'https://fakestoreapi.com',
+    API_PATH: '/auth/login',
+    METHOD: 'POST'
+  });
+
+  assert.equal(loginConfig.expectedStatus, 201);
+});
+
 test('rejects invalid numeric environment values with a clear error', () => {
   assert.throws(
     () =>

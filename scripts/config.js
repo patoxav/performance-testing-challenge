@@ -147,13 +147,13 @@ export function getExecutionConfig(env = {}) {
     url: buildUrl(env.BASE_URL || DEFAULT_BASE_URL, env.API_PATH || DEFAULT_API_PATH),
     normalizedApiPath,
     method,
-    expectedStatus: parseIntegerEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 200),
+    expectedStatus: parseIntegerEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 201),
     sleepSeconds: parseNumericEnv('SLEEP_SECONDS', env.SLEEP_SECONDS, defaultSleepSeconds),
     timeout: env.TIMEOUT || '60s',
     payload,
     headers: buildHeaders({ authToken: env.AUTH_TOKEN, payload }),
     responseTimeLimit,
-    csvFile: env.CSV_FILE || './data/users.csv',
+    csvFile: env.CSV_FILE || '../data/users.csv',
     targetVus: 150
   };
 }
