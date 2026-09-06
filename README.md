@@ -30,7 +30,7 @@ Arquetipo base de **k6** para ejecutar pruebas de rendimiento sobre APIs y gener
 - [Docker](https://www.docker.com/) instalado.
 - [Node.js](https://nodejs.org/) instalado para ejecutar los scripts `npm`.
 
-> Los scripts usan la imagen oficial `grafana/k6`, por lo que no necesitas instalar k6 localmente.
+> Los scripts usan la imagen oficial `grafana/k6:2.2.0`, por lo que no necesitas instalar k6 localmente.
 >
 > Además agregan `host.docker.internal` para que también puedas apuntar a APIs que estén corriendo en tu máquina.
 >
@@ -98,6 +98,18 @@ Genera:
 BASE_URL=https://mi-api.com API_PATH=/health npm run smoke
 ```
 
+PowerShell:
+
+```powershell
+$env:BASE_URL="https://mi-api.com"; $env:API_PATH="/health"; npm run smoke
+```
+
+CMD:
+
+```cmd
+set BASE_URL=https://mi-api.com && set API_PATH=/health && npm run smoke
+```
+
 ### Probar un endpoint autenticado
 
 ```bash
@@ -105,6 +117,16 @@ BASE_URL=https://mi-api.com \
 API_PATH=/v1/orders \
 AUTH_TOKEN=mi_token \
 EXPECTED_STATUS=200 \
+npm run load
+```
+
+PowerShell:
+
+```powershell
+$env:BASE_URL="https://mi-api.com"
+$env:API_PATH="/v1/orders"
+$env:AUTH_TOKEN="mi_token"
+$env:EXPECTED_STATUS="200"
 npm run load
 ```
 
@@ -116,6 +138,17 @@ API_PATH=/v1/orders \
 METHOD=POST \
 EXPECTED_STATUS=201 \
 REQUEST_BODY='{"productId":1,"quantity":2}' \
+npm run smoke
+```
+
+PowerShell:
+
+```powershell
+$env:BASE_URL="https://mi-api.com"
+$env:API_PATH="/v1/orders"
+$env:METHOD="POST"
+$env:EXPECTED_STATUS="201"
+$env:REQUEST_BODY='{"productId":1,"quantity":2}'
 npm run smoke
 ```
 

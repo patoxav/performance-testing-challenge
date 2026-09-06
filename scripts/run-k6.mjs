@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const k6Image = 'grafana/k6:2.2.0';
 const action = process.argv[2];
 const workingDirectory = process.cwd();
 const reportsDirectory = resolve(workingDirectory, 'reports');
@@ -52,7 +53,7 @@ dockerArgs.push(
   'K6_WEB_DASHBOARD_PERIOD=1s',
   '-e',
   `K6_WEB_DASHBOARD_EXPORT=/work/reports/${action}-report.html`,
-  'grafana/k6:latest',
+  k6Image,
   'run',
   `--summary-export=/work/reports/${action}-summary.json`,
   '/work/scripts/api-performance.js'
