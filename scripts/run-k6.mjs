@@ -25,7 +25,7 @@ if (typeof process.getuid === 'function' && typeof process.getgid === 'function'
   dockerArgs.push('--user', `${process.getuid()}:${process.getgid()}`);
 }
 
-if (process.platform === 'linux') {
+if (process.platform === 'linux' && ['1', 'true'].includes(process.env.ENABLE_HOST_GATEWAY || '')) {
   dockerArgs.push('--add-host', 'host.docker.internal:host-gateway');
 }
 

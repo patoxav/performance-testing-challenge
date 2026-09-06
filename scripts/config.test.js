@@ -66,4 +66,23 @@ test('maps environment variables into executable k6 configuration', () => {
 
   assert.equal(fallbackConfig.options.stages.length, 3);
   assert.equal(fallbackConfig.responseTimeLimit, 1500);
+
+  const postConfig = getExecutionConfig({
+    TEST_TYPE: 'smoke',
+    METHOD: 'POST',
+    REQUEST_BODY: '{"productId":1}'
+  });
+
+  assert.equal(postConfig.payload, '{"productId":1}');
+  assert.deepEqual(postConfig.headers, {
+    'Content-Type': 'application/json'
+  });
+
+  const emptyPostConfig = getExecutionConfig({
+    TEST_TYPE: 'smoke',
+    METHOD: 'POST'
+  });
+
+  assert.equal(emptyPostConfig.payload, null);
+  assert.deepEqual(emptyPostConfig.headers, {});
 });

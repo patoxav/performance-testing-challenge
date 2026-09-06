@@ -32,8 +32,6 @@ Arquetipo base de **k6** para ejecutar pruebas de rendimiento sobre APIs y gener
 
 > Los scripts usan la imagen oficial `grafana/k6:2.2.0`, por lo que no necesitas instalar k6 localmente.
 >
-> Además agregan `host.docker.internal` para que también puedas apuntar a APIs que estén corriendo en tu máquina.
->
 > Los comandos `npm` llaman a un wrapper en Node.js, así que no dependen de sintaxis específica de Bash.
 
 ## Configuración
@@ -108,6 +106,14 @@ CMD:
 
 ```cmd
 set BASE_URL=https://mi-api.com && set API_PATH=/health && npm run smoke
+```
+
+### Probar una API local expuesta en tu máquina
+
+En Linux, habilita el alias `host.docker.internal` solo cuando lo necesites:
+
+```bash
+ENABLE_HOST_GATEWAY=true BASE_URL=http://host.docker.internal:3000 API_PATH=/health npm run smoke
 ```
 
 ### Probar un endpoint autenticado

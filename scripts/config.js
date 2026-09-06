@@ -63,7 +63,7 @@ export function buildUrl(baseUrl = DEFAULT_BASE_URL, apiPath = DEFAULT_API_PATH)
 export function buildHeaders({ authToken, payload }) {
   const headers = {};
 
-  if (payload !== null) {
+  if (payload !== null && payload !== '') {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -79,7 +79,9 @@ export function getExecutionConfig(env = {}) {
   const profile = getProfile(profileName);
   const normalizedApiPath = normalizeApiPath(env.API_PATH);
   const method = (env.METHOD || 'GET').toUpperCase();
-  const payload = ['POST', 'PUT', 'PATCH'].includes(method) ? env.REQUEST_BODY || '' : null;
+  const rawRequestBody = env.REQUEST_BODY === undefined ? '' : String(env.REQUEST_BODY);
+  const payload =
+    ['POST', 'PUT', 'PATCH'].includes(method) && rawRequestBody !== '' ? rawRequestBody : null;
 
   return {
     profileName,
