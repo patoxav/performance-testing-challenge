@@ -2,8 +2,6 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const k6Image = 'grafana/k6:2.2.0';
-const dockerCommand = process.platform === 'win32' ? 'docker.exe' : 'docker';
 const action = process.argv[2];
 const workingDirectory = process.cwd();
 const reportsDirectory = resolve(workingDirectory, 'reports');
@@ -13,57 +11,56 @@ if (action === 'clean') {
   process.exit(0);
 }
 
-if (!['smoke', 'load'].includes(action)) {
-  console.error('Usage: node ./scripts/run-k6.mjs <smoke|load|clean>');
+if (action !== 'load') {
+  console.error('Usage: node ./scripts/run-k6.mjs <load|clean>');
   process.exit(1);
 }
 
 mkdirSync(reportsDirectory, { recursive: true });
 
-const dockerArgs = ['run', '--rm', '-i'];
+const resolveProjectPath = (value) => {
+  if (!value) {
+    return resolve(workingDirectory, 'data/users.csv');
+  }
 
-if (typeof process.getuid === 'function' && typeof process.getgid === 'function') {
-  dockerArgs.push('--user', `${process.getuid()}:${process.getgid()}`);
-}
+  return value.startsWith('/') ? value : resolve(workingDirectory, value);
+};
 
-if (process.platform === 'linux' && ['1', 'true'].includes(process.env.ENABLE_HOST_GATEWAY || '')) {
-  dockerArgs.push('--add-host', 'host.docker.internal:host-gateway');
-}
+const defaultEnvironment = {
+  BASE_URL: process.env.BASE_URL || 'https://fakestoreapi.com',
+  API_PATH: process.env.API_PATH || '/auth/login',
+  METHOD: process.env.METHOD || 'POST',
+  CSV_FILE: resolveProjectPath(process.env.CSV_FILE || './data/users.csv'),
+  EXPECTED_STATUS: process.env.EXPECTED_STATUS || '200',
+  SLEEP_SECONDS: process.env.SLEEP_SECONDS || '5',
+  TARGET_VUS: process.env.TARGET_VUS || '150',
+  RESPONSE_TIME_LIMIT: process.env.RESPONSE_TIME_LIMIT || '1500',
+  TIMEOUT: process.env.TIMEOUT || '60s',
+  TEST_TYPE: 'load'
+};
 
-dockerArgs.push('-v', `${workingDirectory}:/work`, '-w', '/work');
-
-for (const variableName of [
-  'BASE_URL',
-  'API_PATH',
-  'METHOD',
-  'AUTH_TOKEN',
-  'REQUEST_BODY',
-  'EXPECTED_STATUS',
-  'SLEEP_SECONDS',
-  'TIMEOUT'
-]) {
-  dockerArgs.push('-e', variableName);
-}
-
-dockerArgs.push(
-  '-e',
-  `TEST_TYPE=${action}`,
-  '-e',
-  'K6_WEB_DASHBOARD=true',
-  '-e',
-  'K6_WEB_DASHBOARD_PERIOD=1s',
-  '-e',
-  `K6_WEB_DASHBOARD_EXPORT=/work/reports/${action}-report.html`,
-  k6Image,
-  'run',
-  `--summary-export=/work/reports/${action}-summary.json`,
-  '/work/scripts/api-performance.js'
+const k6Command = process.platform === 'win32' ? 'k6.exe' : 'k6';
+const result = spawnSync(
+  k6Command,
+  [
+    'run',
+    '--summary-export', `${reportsDirectory}/load-summary.json`,
+    '--out', `json=${reportsDirectory}/load-metrics.json`,
+    'scripts/api-performance.js'
+  ],
+  {
+    stdio: 'inherit',
+    cwd: workingDirectory,
+    env: {
+      ...process.env,
+      ...defaultEnvironment
+    }
+  }
 );
 
-const result = spawnSync(dockerCommand, dockerArgs, { stdio: 'inherit' });
-
 if (result.error) {
-  console.error(`Failed to execute Docker: ${result.error.message}`);
+  console.error(`Failed to execute k6: ${result.error.message}`);
+  console.error('Install k6 locally: brew install k6');
   process.exit(1);
 }
 

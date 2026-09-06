@@ -1,0 +1,12 @@
+{
+  "name": "ai-quality-analysis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Estructura para interpretar métricas de k6 con un LLM",
+  "scripts": {
+    "analyze": "node analyze-response.js"
+  },
+  "dependencies": {
+    "openai": "^4.67.3"
+  }
+}

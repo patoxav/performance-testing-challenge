@@ -3,9 +3,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "smoke": "node ./scripts/run-k6.mjs smoke",
     "load": "node ./scripts/run-k6.mjs load",
     "clean:reports": "node ./scripts/run-k6.mjs clean",
+    "analyze:llm": "node ./ai-quality-analysis/analyze-response.js",
     "test": "node --test"
   }
 }

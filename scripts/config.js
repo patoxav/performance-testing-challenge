@@ -1,32 +1,37 @@
-export const DEFAULT_BASE_URL = 'https://test-api.k6.io';
-export const DEFAULT_API_PATH = '/public/crocodiles/';
+export const DEFAULT_BASE_URL = 'https://fakestoreapi.com';
+export const DEFAULT_API_PATH = '/auth/login';
 
-function createProfile({ responseTimeLimit, ...options }) {
+function createProfile({ responseTimeLimit, thresholds, ...options }) {
   return {
     ...options,
     responseTimeLimit,
     thresholds: {
-      http_req_failed: ['rate<0.01'],
+      http_req_failed: ['rate<0.03'],
       http_req_duration: [`p(95)<${responseTimeLimit}`],
-      api_error_rate: ['rate<0.01'],
-      checks: ['rate>0.99']
+      api_error_rate: ['rate<0.03'],
+      checks: ['rate>0.99'],
+      ...thresholds
     }
   };
 }
 
 export const testProfiles = {
-  smoke: createProfile({
-    vus: 1,
-    duration: '15s',
-    responseTimeLimit: 1000
-  }),
   load: createProfile({
+    responseTimeLimit: 1500,
     stages: [
-      { duration: '30s', target: 5 },
-      { duration: '30s', target: 10 },
-      { duration: '15s', target: 0 }
+      { duration: '1m', target: 25 },
+      { duration: '2m', target: 50 },
+      { duration: '2m', target: 75 },
+      { duration: '2m', target: 100 },
+      { duration: '3m', target: 130 },
+      { duration: '2m', target: 150 },
+      { duration: '1m', target: 0 }
     ],
-    responseTimeLimit: 1500
+    thresholds: {
+      http_req_failed: ['rate<0.03'],
+      http_req_duration: ['p(95)<1500'],
+      api_error_rate: ['rate<0.03']
+    }
   })
 };
 
@@ -101,25 +106,54 @@ function parseIntegerEnv(name, value, defaultValue) {
 export function getExecutionConfig(env = {}) {
   const profileName = (env.TEST_TYPE || 'load').toLowerCase();
   const profile = getProfile(profileName);
-  const normalizedApiPath = normalizeApiPath(env.API_PATH);
-  const method = (env.METHOD || 'GET').toUpperCase();
+  const defaultResponseTimeLimit = profile.responseTimeLimit ?? 1500;
+  const responseTimeLimit = parseIntegerEnv(
+    'RESPONSE_TIME_LIMIT',
+    env.RESPONSE_TIME_LIMIT,
+    defaultResponseTimeLimit
+  );
+  const normalizedApiPath = normalizeApiPath(env.API_PATH || DEFAULT_API_PATH);
+  const method = (env.METHOD || 'POST').toUpperCase();
   const rawRequestBody = env.REQUEST_BODY === undefined ? '' : String(env.REQUEST_BODY);
   const payload =
     ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && rawRequestBody !== ''
       ? rawRequestBody
       : null;
+  const defaultSleepSeconds = 5;
+
+  const steppedLoadOptions = {
+    ...getOptions(profileName),
+    stages: [
+      { duration: '1m', target: 25 },
+      { duration: '2m', target: 50 },
+      { duration: '2m', target: 75 },
+      { duration: '2m', target: 100 },
+      { duration: '3m', target: 130 },
+      { duration: '2m', target: 150 },
+      { duration: '1m', target: 0 }
+    ]
+  };
 
   return {
     profileName,
-    options: getOptions(profileName),
-    url: buildUrl(env.BASE_URL, env.API_PATH),
+    options: {
+      ...steppedLoadOptions,
+      thresholds: {
+        http_req_failed: ['rate<0.03'],
+        http_req_duration: [`p(95)<${responseTimeLimit}`],
+        api_error_rate: ['rate<0.03']
+      }
+    },
+    url: buildUrl(env.BASE_URL || DEFAULT_BASE_URL, env.API_PATH || DEFAULT_API_PATH),
     normalizedApiPath,
     method,
     expectedStatus: parseIntegerEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 200),
-    sleepSeconds: parseNumericEnv('SLEEP_SECONDS', env.SLEEP_SECONDS, 1),
-    timeout: env.TIMEOUT || '30s',
+    sleepSeconds: parseNumericEnv('SLEEP_SECONDS', env.SLEEP_SECONDS, defaultSleepSeconds),
+    timeout: env.TIMEOUT || '60s',
     payload,
     headers: buildHeaders({ authToken: env.AUTH_TOKEN, payload }),
-    responseTimeLimit: profile.responseTimeLimit
+    responseTimeLimit,
+    csvFile: env.CSV_FILE || './data/users.csv',
+    targetVus: 150
   };
 }

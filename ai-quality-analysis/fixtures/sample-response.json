@@ -1,0 +1,57 @@
+{
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "root"
+  },
+  "metrics": {
+    "http_reqs": {
+      "count": 1200,
+      "rate": 20.0
+    },
+    "http_req_duration": {
+      "avg": 524.12,
+      "min": 186.21,
+      "med": 431.43,
+      "max": 1488.76,
+      "p(90)": 983.32,
+      "p(95)": 1192.41,
+      "p(99)": 1445.19
+    },
+    "http_req_failed": {
+      "rate": 0.0183,
+      "passes": 22,
+      "fails": 22
+    },
+    "iterations": {
+      "count": 1200,
+      "rate": 20.0
+    },
+    "checks": {
+      "rate": 0.9917,
+      "passes": 1190,
+      "fails": 10
+    },
+    "data_received": {
+      "count": 773222,
+      "rate": 12887.0
+    },
+    "data_sent": {
+      "count": 214800,
+      "rate": 3580.0
+    }
+  },
+  "status": "Pass",
+  "scenario": {
+    "name": "login_scenario",
+    "executor": "constant-arrival-rate",
+    "rate": 20,
+    "timeUnit": "1s",
+    "duration": "60s"
+  },
+  "sla": {
+    "target_tps": 20,
+    "max_p95_ms": 1500,
+    "max_error_rate_pct": 3
+  }
+}

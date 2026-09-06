@@ -24,15 +24,51 @@ test('builds URLs without duplicated or inconsistent slashes', () => {
 
 test('falls back to the load profile for unsupported profile names', () => {
   assert.deepEqual(getProfile('unsupported-profile'), getProfile('load'));
-  assert.equal(getProfile('smoke').duration, '15s');
-  assert.equal(getProfile('load').stages.length, 3);
-  assert.equal(getOptions('unsupported-profile').stages.length, 3);
+  assert.equal(getProfile('load').stages.length, 7);
+  assert.equal(getOptions('unsupported-profile').stages.length, 7);
 });
 
 test('uses structured profile data for response-time limits', () => {
-  assert.equal(getProfile('smoke').responseTimeLimit, 1000);
   assert.equal(getProfile('load').responseTimeLimit, 1500);
-  assert.equal(getOptions('smoke').thresholds.http_req_duration[0], 'p(95)<1000');
+  assert.equal(getOptions('load').thresholds.http_req_duration[0], 'p(95)<1500');
+});
+
+test('uses a login load profile aligned to the challenge SLA', () => {
+  const profile = getProfile('load');
+
+  assert.deepEqual(profile.stages, [
+    { duration: '1m', target: 25 },
+    { duration: '2m', target: 50 },
+    { duration: '2m', target: 75 },
+    { duration: '2m', target: 100 },
+    { duration: '3m', target: 130 },
+    { duration: '2m', target: 150 },
+    { duration: '1m', target: 0 }
+  ]);
+  assert.equal(profile.responseTimeLimit, 1500);
+  assert.equal(profile.thresholds.http_req_failed[0], 'rate<0.03');
+  assert.equal(profile.thresholds.http_req_duration[0], 'p(95)<1500');
+});
+
+test('allows custom stepped-load tuning for the required challenge profile', () => {
+  const config = getExecutionConfig({
+    TEST_TYPE: 'load',
+    TARGET_VUS: '150',
+    RESPONSE_TIME_LIMIT: '1500',
+    SLEEP_SECONDS: '5'
+  });
+
+  assert.deepEqual(config.options.stages, [
+    { duration: '1m', target: 25 },
+    { duration: '2m', target: 50 },
+    { duration: '2m', target: 75 },
+    { duration: '2m', target: 100 },
+    { duration: '3m', target: 130 },
+    { duration: '2m', target: 150 },
+    { duration: '1m', target: 0 }
+  ]);
+  assert.equal(config.responseTimeLimit, 1500);
+  assert.equal(config.sleepSeconds, 5);
 });
 
 test('builds headers only for the request data that exists', () => {
@@ -46,29 +82,29 @@ test('builds headers only for the request data that exists', () => {
 });
 
 test('maps environment variables into executable k6 configuration', () => {
-  const smokeConfig = getExecutionConfig({
-    TEST_TYPE: 'smoke',
+  const loadConfig = getExecutionConfig({
+    TEST_TYPE: 'load',
     BASE_URL: 'https://api.example.com/',
     API_PATH: '/health/',
     EXPECTED_STATUS: '204',
     SLEEP_SECONDS: '0.5'
   });
 
-  assert.equal(smokeConfig.url, 'https://api.example.com/health');
-  assert.equal(smokeConfig.options.duration, '15s');
-  assert.equal(smokeConfig.responseTimeLimit, 1000);
-  assert.equal(smokeConfig.expectedStatus, 204);
-  assert.equal(smokeConfig.sleepSeconds, 0.5);
+  assert.equal(loadConfig.url, 'https://api.example.com/health');
+  assert.equal(loadConfig.options.stages[0].duration, '1m');
+  assert.equal(loadConfig.responseTimeLimit, 1500);
+  assert.equal(loadConfig.expectedStatus, 204);
+  assert.equal(loadConfig.sleepSeconds, 0.5);
 
   const fallbackConfig = getExecutionConfig({
     TEST_TYPE: 'unsupported-profile'
   });
 
-  assert.equal(fallbackConfig.options.stages.length, 3);
+  assert.equal(fallbackConfig.options.stages.length, 7);
   assert.equal(fallbackConfig.responseTimeLimit, 1500);
 
   const postConfig = getExecutionConfig({
-    TEST_TYPE: 'smoke',
+    TEST_TYPE: 'load',
     METHOD: 'POST',
     REQUEST_BODY: '{"productId":1}'
   });
@@ -79,7 +115,7 @@ test('maps environment variables into executable k6 configuration', () => {
   });
 
   const emptyPostConfig = getExecutionConfig({
-    TEST_TYPE: 'smoke',
+    TEST_TYPE: 'load',
     METHOD: 'POST'
   });
 
@@ -87,7 +123,7 @@ test('maps environment variables into executable k6 configuration', () => {
   assert.deepEqual(emptyPostConfig.headers, {});
 
   const deleteConfig = getExecutionConfig({
-    TEST_TYPE: 'smoke',
+    TEST_TYPE: 'load',
     METHOD: 'DELETE',
     REQUEST_BODY: '{"reason":"cleanup"}'
   });
