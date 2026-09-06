@@ -1,0 +1,15 @@
+version: '3.8'
+
+# Permite ejecutar cualquier prueba del arquetipo sin instalar k6 localmente.
+#
+# Ejemplos:
+#   docker compose run --rm k6 run -e ENV=local src/tests/smoke.test.js
+#   docker compose run --rm k6 run -e ENV=staging src/tests/load.test.js
+services:
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./src:/k6/src
+      - ./reports:/k6/reports
+    working_dir: /k6
+    entrypoint: ["k6"]

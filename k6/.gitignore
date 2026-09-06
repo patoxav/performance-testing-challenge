@@ -1,0 +1,5 @@
+node_modules/
+
+# Reportes generados por k6 (se mantienen solo localmente/CI)
+reports/*
+!reports/.gitkeep

@@ -1,0 +1,13 @@
+{
+  "name": "k6-performance-testing-archetype",
+  "version": "1.0.0",
+  "description": "Arquetipo de pruebas de performance con k6, incluyendo generación de reportes nativos (HTML/JSON/consola).",
+  "private": true,
+  "scripts": {
+    "test:smoke": "k6 run -e ENV=local src/tests/smoke.test.js",
+    "test:load": "k6 run -e ENV=local src/tests/load.test.js",
+    "test:stress": "k6 run -e ENV=local src/tests/stress.test.js",
+    "test:spike": "k6 run -e ENV=local src/tests/spike.test.js"
+  },
+  "license": "MIT"
+}
