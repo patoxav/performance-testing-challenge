@@ -60,4 +60,10 @@ dockerArgs.push(
 );
 
 const result = spawnSync('docker', dockerArgs, { stdio: 'inherit' });
+
+if (result.error) {
+  console.error(`Failed to execute Docker: ${result.error.message}`);
+  process.exit(1);
+}
+
 process.exit(result.status ?? 1);
