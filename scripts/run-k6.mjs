@@ -30,7 +30,7 @@ const defaultEnvironment = {
   BASE_URL: process.env.BASE_URL || 'https://fakestoreapi.com',
   API_PATH: process.env.API_PATH || '/auth/login',
   METHOD: process.env.METHOD || 'POST',
-  CSV_FILE: resolveProjectPath(process.env.CSV_FILE || '../data/users.csv'),
+  CSV_FILE: resolveProjectPath(process.env.CSV_FILE || 'data/users.csv'),
   EXPECTED_STATUS: process.env.EXPECTED_STATUS || '201',
   SLEEP_SECONDS: process.env.SLEEP_SECONDS || '5',
   TARGET_VUS: process.env.TARGET_VUS || '150',

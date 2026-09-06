@@ -27,7 +27,14 @@ export const options = {
 const DEFAULT_VALID_USERS = [{ username: 'donero', password: 'ewedon' }];
 
 function getCredentialsFromCsv(csvPath) {
-  const csvText = open(csvPath);
+  let csvText;
+
+  try {
+    csvText = open(csvPath);
+  } catch (error) {
+    return DEFAULT_VALID_USERS;
+  }
+
   const lines = csvText
     .split(/\r?\n/)
     .map((line) => line.trim())
