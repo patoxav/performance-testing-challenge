@@ -1,0 +1,11 @@
+{
+  "name": "performance-testing-challenge",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "smoke": "node ./scripts/run-k6.mjs smoke",
+    "load": "node ./scripts/run-k6.mjs load",
+    "clean:reports": "node ./scripts/run-k6.mjs clean",
+    "test": "node --test"
+  }
+}
