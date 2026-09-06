@@ -85,6 +85,17 @@ test('maps environment variables into executable k6 configuration', () => {
 
   assert.equal(emptyPostConfig.payload, null);
   assert.deepEqual(emptyPostConfig.headers, {});
+
+  const deleteConfig = getExecutionConfig({
+    TEST_TYPE: 'smoke',
+    METHOD: 'DELETE',
+    REQUEST_BODY: '{"reason":"cleanup"}'
+  });
+
+  assert.equal(deleteConfig.payload, '{"reason":"cleanup"}');
+  assert.deepEqual(deleteConfig.headers, {
+    'Content-Type': 'application/json'
+  });
 });
 
 test('rejects invalid numeric environment values with a clear error', () => {
@@ -94,6 +105,14 @@ test('rejects invalid numeric environment values with a clear error', () => {
         EXPECTED_STATUS: 'abc'
       }),
     /EXPECTED_STATUS must be a valid number/
+  );
+
+  assert.throws(
+    () =>
+      getExecutionConfig({
+        EXPECTED_STATUS: '200.5'
+      }),
+    /EXPECTED_STATUS must be a valid integer/
   );
 
   assert.throws(

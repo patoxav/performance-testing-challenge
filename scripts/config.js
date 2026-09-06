@@ -88,6 +88,16 @@ function parseNumericEnv(name, value, defaultValue) {
   return parsedValue;
 }
 
+function parseIntegerEnv(name, value, defaultValue) {
+  const parsedValue = parseNumericEnv(name, value, defaultValue);
+
+  if (!Number.isInteger(parsedValue)) {
+    throw new Error(`${name} must be a valid integer`);
+  }
+
+  return parsedValue;
+}
+
 export function getExecutionConfig(env = {}) {
   const profileName = (env.TEST_TYPE || 'load').toLowerCase();
   const profile = getProfile(profileName);
@@ -95,7 +105,9 @@ export function getExecutionConfig(env = {}) {
   const method = (env.METHOD || 'GET').toUpperCase();
   const rawRequestBody = env.REQUEST_BODY === undefined ? '' : String(env.REQUEST_BODY);
   const payload =
-    ['POST', 'PUT', 'PATCH'].includes(method) && rawRequestBody !== '' ? rawRequestBody : null;
+    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && rawRequestBody !== ''
+      ? rawRequestBody
+      : null;
 
   return {
     profileName,
@@ -103,7 +115,7 @@ export function getExecutionConfig(env = {}) {
     url: buildUrl(env.BASE_URL, env.API_PATH),
     normalizedApiPath,
     method,
-    expectedStatus: parseNumericEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 200),
+    expectedStatus: parseIntegerEnv('EXPECTED_STATUS', env.EXPECTED_STATUS, 200),
     sleepSeconds: parseNumericEnv('SLEEP_SECONDS', env.SLEEP_SECONDS, 1),
     timeout: env.TIMEOUT || '30s',
     payload,

@@ -28,7 +28,7 @@ Arquetipo base de **k6** para ejecutar pruebas de rendimiento sobre APIs y gener
 ## Requisitos
 
 - [Docker](https://www.docker.com/) instalado.
-- [Node.js](https://nodejs.org/) instalado para ejecutar los scripts `npm`.
+- [Node.js 18 o superior](https://nodejs.org/) instalado para ejecutar los scripts `npm` y `npm test`.
 
 > Los scripts usan la imagen oficial `grafana/k6:2.2.0`, por lo que no necesitas instalar k6 localmente.
 >
